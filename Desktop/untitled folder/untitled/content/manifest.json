@@ -1,18 +1,26 @@
 {
   "education": [
     "bachelor-degree.md",
-    "high-school.md"
+    "high-school.md",
+    "masters-degree.md",
+    "netlify-cms-test.md",
+    "test-education.md"
   ],
   "skills": [
+    "html5.md",
     "javascript.md",
+    "nodejs.md",
+    "python.md",
     "react.md",
-    "python.md"
+    "test-skills.md"
   ],
   "projects": [
+    "ecommerce-platform.md",
     "portfolio-website.md"
   ],
   "publications": [
-    "ml-fairness-healthcare.md"
+    "ml-fairness-healthcare.md",
+    "ml-web-dev.md"
   ],
   "podcasts": [
     "test-podcast.md"
@@ -21,6 +29,7 @@
     "test-video.md"
   ],
   "awards": [
-    "deans-list.md"
+    "deans-list.md",
+    "innovation-award.md"
   ]
 }
