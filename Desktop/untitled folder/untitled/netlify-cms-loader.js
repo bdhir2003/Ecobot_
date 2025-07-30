@@ -290,18 +290,33 @@ async function loadCollections() {
 
 async function loadEducation() {
     try {
-        const response = await fetch('./content/education/');
-        if (!response.ok) {
-            console.log('⚠️ Education folder not accessible via HTTP');
-            return;
-        }
-        
-        // For now, we'll try to load individual files
-        // In a real deployment, you'd get a directory listing
         const educationContainer = document.getElementById('educationList');
         if (!educationContainer) return;
         
-        console.log('✅ Education section ready for CMS content');
+        // Load file list from manifest
+        const manifestResponse = await fetch('./content/manifest.json');
+        if (!manifestResponse.ok) {
+            console.log('⚠️ Could not load content manifest');
+            return;
+        }
+        
+        const manifest = await manifestResponse.json();
+        const educationFiles = manifest.education || [];
+        
+        for (const filename of educationFiles) {
+            try {
+                const response = await fetch(`./content/education/${filename}`);
+                if (response.ok) {
+                    const content = await response.text();
+                    const data = parseMarkdownFrontmatter(content);
+                    renderEducationItem(data, educationContainer);
+                }
+            } catch (error) {
+                console.log(`⚠️ Could not load ${filename}:`, error.message);
+            }
+        }
+        
+        console.log('✅ Education loaded');
     } catch (error) {
         console.log('⚠️ Could not load education:', error.message);
     }
@@ -312,7 +327,30 @@ async function loadSkills() {
         const skillsContainer = document.getElementById('allSkills');
         if (!skillsContainer) return;
         
-        console.log('✅ Skills section ready for CMS content');
+        // Load file list from manifest
+        const manifestResponse = await fetch('./content/manifest.json');
+        if (!manifestResponse.ok) {
+            console.log('⚠️ Could not load content manifest');
+            return;
+        }
+        
+        const manifest = await manifestResponse.json();
+        const skillFiles = manifest.skills || [];
+        
+        for (const filename of skillFiles) {
+            try {
+                const response = await fetch(`./content/skills/${filename}`);
+                if (response.ok) {
+                    const content = await response.text();
+                    const data = parseMarkdownFrontmatter(content);
+                    renderSkillItem(data, skillsContainer);
+                }
+            } catch (error) {
+                console.log(`⚠️ Could not load ${filename}:`, error.message);
+            }
+        }
+        
+        console.log('✅ Skills loaded');
     } catch (error) {
         console.log('⚠️ Could not load skills:', error.message);
     }
@@ -323,7 +361,30 @@ async function loadProjects() {
         const projectsContainer = document.getElementById('projectsGrid');
         if (!projectsContainer) return;
         
-        console.log('✅ Projects section ready for CMS content');
+        // Load file list from manifest
+        const manifestResponse = await fetch('./content/manifest.json');
+        if (!manifestResponse.ok) {
+            console.log('⚠️ Could not load content manifest');
+            return;
+        }
+        
+        const manifest = await manifestResponse.json();
+        const projectFiles = manifest.projects || [];
+        
+        for (const filename of projectFiles) {
+            try {
+                const response = await fetch(`./content/projects/${filename}`);
+                if (response.ok) {
+                    const content = await response.text();
+                    const data = parseMarkdownFrontmatter(content);
+                    renderProjectItem(data, projectsContainer);
+                }
+            } catch (error) {
+                console.log(`⚠️ Could not load ${filename}:`, error.message);
+            }
+        }
+        
+        console.log('✅ Projects loaded');
     } catch (error) {
         console.log('⚠️ Could not load projects:', error.message);
     }
@@ -334,7 +395,30 @@ async function loadPublications() {
         const publicationsContainer = document.getElementById('publicationsList');
         if (!publicationsContainer) return;
         
-        console.log('✅ Publications section ready for CMS content');
+        // Load file list from manifest
+        const manifestResponse = await fetch('./content/manifest.json');
+        if (!manifestResponse.ok) {
+            console.log('⚠️ Could not load content manifest');
+            return;
+        }
+        
+        const manifest = await manifestResponse.json();
+        const publicationFiles = manifest.publications || [];
+        
+        for (const filename of publicationFiles) {
+            try {
+                const response = await fetch(`./content/publications/${filename}`);
+                if (response.ok) {
+                    const content = await response.text();
+                    const data = parseMarkdownFrontmatter(content);
+                    renderPublicationItem(data, publicationsContainer);
+                }
+            } catch (error) {
+                console.log(`⚠️ Could not load ${filename}:`, error.message);
+            }
+        }
+        
+        console.log('✅ Publications loaded');
     } catch (error) {
         console.log('⚠️ Could not load publications:', error.message);
     }
@@ -367,10 +451,124 @@ async function loadAwards() {
         const awardsContainer = document.getElementById('awardsList');
         if (!awardsContainer) return;
         
-        console.log('✅ Awards section ready for CMS content');
+        // Load file list from manifest
+        const manifestResponse = await fetch('./content/manifest.json');
+        if (!manifestResponse.ok) {
+            console.log('⚠️ Could not load content manifest');
+            return;
+        }
+        
+        const manifest = await manifestResponse.json();
+        const awardFiles = manifest.awards || [];
+        
+        for (const filename of awardFiles) {
+            try {
+                const response = await fetch(`./content/awards/${filename}`);
+                if (response.ok) {
+                    const content = await response.text();
+                    const data = parseMarkdownFrontmatter(content);
+                    renderAwardItem(data, awardsContainer);
+                }
+            } catch (error) {
+                console.log(`⚠️ Could not load ${filename}:`, error.message);
+            }
+        }
+        
+        console.log('✅ Awards loaded');
     } catch (error) {
         console.log('⚠️ Could not load awards:', error.message);
     }
+}
+
+// Render functions for different content types
+function renderEducationItem(data, container) {
+    const educationItem = document.createElement('div');
+    educationItem.className = 'education-item';
+    
+    const startYear = data.startDate ? new Date(data.startDate).getFullYear() : '';
+    const endYear = data.endDate ? new Date(data.endDate).getFullYear() : 'Present';
+    
+    educationItem.innerHTML = `
+        <div class="education-date">${startYear} - ${endYear}</div>
+        <div class="education-content">
+            <h3>${data.degree || 'Degree'}</h3>
+            <h4>${data.institution || 'Institution'}</h4>
+            <p>${data.description || ''}</p>
+        </div>
+    `;
+    
+    container.appendChild(educationItem);
+}
+
+function renderSkillItem(data, container) {
+    const skillItem = document.createElement('div');
+    skillItem.className = 'skill-item';
+    
+    skillItem.innerHTML = `
+        <div class="skill-info">
+            <h3>${data.name || 'Skill'}</h3>
+            <span class="skill-category">${data.category || ''}</span>
+            <div class="skill-level">${data.proficiency || ''}</div>
+        </div>
+    `;
+    
+    container.appendChild(skillItem);
+}
+
+function renderProjectItem(data, container) {
+    const projectItem = document.createElement('div');
+    projectItem.className = 'project-card';
+    
+    const technologies = Array.isArray(data.technologies) ? data.technologies.join(', ') : (data.technologies || '');
+    
+    projectItem.innerHTML = `
+        <div class="project-content">
+            <h3>${data.title || 'Project'}</h3>
+            <div class="project-description">${data.description || ''}</div>
+            <div class="project-tech">${technologies}</div>
+            <div class="project-links">
+                ${data.url ? `<a href="${data.url}" target="_blank" class="btn btn-small">View Project</a>` : ''}
+                ${data.github ? `<a href="${data.github}" target="_blank" class="btn btn-small">GitHub</a>` : ''}
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(projectItem);
+}
+
+function renderPublicationItem(data, container) {
+    const pubItem = document.createElement('div');
+    pubItem.className = 'publication-item';
+    
+    pubItem.innerHTML = `
+        <div class="publication-content">
+            <h3>${data.title || 'Publication'}</h3>
+            <div class="publication-journal">${data.journal || ''}</div>
+            <div class="publication-authors">${data.authors || ''}</div>
+            <div class="publication-date">${data.date ? new Date(data.date).getFullYear() : ''}</div>
+            <div class="publication-abstract">${data.abstract || ''}</div>
+            ${data.url ? `<a href="${data.url}" target="_blank" class="btn btn-small">Read Publication</a>` : ''}
+        </div>
+    `;
+    
+    container.appendChild(pubItem);
+}
+
+function renderAwardItem(data, container) {
+    const awardItem = document.createElement('div');
+    awardItem.className = 'award-item';
+    
+    awardItem.innerHTML = `
+        <div class="award-content">
+            <h3>${data.title || 'Award'}</h3>
+            <div class="award-organization">${data.organization || ''}</div>
+            <div class="award-date">${data.date ? new Date(data.date).getFullYear() : ''}</div>
+            <div class="award-category">${data.category || ''}</div>
+            <div class="award-description">${data.description || ''}</div>
+        </div>
+    `;
+    
+    container.appendChild(awardItem);
 }
 
 // Load content when page loads

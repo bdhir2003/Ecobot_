@@ -1,10 +1,12 @@
 {
   "education": [
-    "bachelor-degree.md"
+    "bachelor-degree.md",
+    "high-school.md"
   ],
   "skills": [
     "javascript.md",
-    "react.md"
+    "react.md",
+    "python.md"
   ],
   "projects": [
     "portfolio-website.md"
