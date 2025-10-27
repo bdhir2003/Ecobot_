@@ -1,0 +1,19 @@
+backend:
+  name: git-gateway
+  branch: main
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+collections:
+  - name: "portfolio"
+    label: "Portfolio Content"
+    files:
+      - file: "index.html"
+        label: "Main Page"
+        name: "main_page"
+        fields:
+          - { label: "Name", name: "name", widget: "string" }
+          - { label: "About", name: "about", widget: "text" }
+          - { label: "Skills", name: "skills", widget: "list" }
+          - { label: "Experience", name: "experience", widget: "list" }
+          - { label: "Projects", name: "projects", widget: "list" }
+          - { label: "Contact Email", name: "contact_email", widget: "string" }
