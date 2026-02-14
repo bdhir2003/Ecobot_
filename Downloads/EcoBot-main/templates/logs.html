@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoBot - Evaluations</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .eval-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .eval-btn:hover {
+            background-color: #45a049;
+        }
+
+        .eval-content {
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .score {
+            font-weight: bold;
+        }
+
+        .nav {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav">
+        <a href="/">← Back to Chat</a>
+    </div>
+    <h1>Conversation Logs & Evaluations</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Session ID</th>
+                <th>Topic</th>
+                <th>User Query</th>
+                <th>Bot Response</th>
+                <th>Evaluation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.timestamp }}</td>
+                <td>{{ log.session_id }}</td>
+                <td>{{ log.topic }}</td>
+                <td>{{ log.user_message }}</td>
+                <td>{{ log.bot_response }}</td>
+                <td id="eval-{{ loop.index }}">
+                    {% if log.evaluation %}
+                    <div class="eval-content">
+                        <div><span class="score">Fairness:</span> {{ log.evaluation.fairness_score }}</div>
+                        <div><span class="score">Accuracy:</span> {{ log.evaluation.accuracy_score }}</div>
+                        <div><span class="score">Compliance:</span> {{ log.evaluation.compliance }}</div>
+                        <div><em>{{ log.evaluation.explanation }}</em></div>
+                    </div>
+                    {% else %}
+                    <button class="eval-btn" onclick="runEval(this)" data-log='{{ log|tojson }}'>Run Eval</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        async function runEval(btn) {
+            const logData = JSON.parse(btn.getAttribute('data-log'));
+            btn.disabled = true;
+            btn.textContent = "Evaluating...";
+
+            try {
+                const response = await fetch('/run_eval', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        timestamp: logData.timestamp,
+                        query: logData.user_message,
+                        response: logData.bot_response
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert("Error: " + data.error);
+                    btn.disabled = false;
+                    btn.textContent = "Run Eval";
+                    return;
+                }
+
+                // key stats
+                const fairness = data.fairness_score;
+                const accuracy = data.accuracy_score;
+                const compliance = data.compliance;
+                const explanation = data.explanation;
+
+                const html = `
+                    <div class="eval-content">
+                        <div><span class="score">Fairness:</span> ${fairness}</div>
+                        <div><span class="score">Accuracy:</span> ${accuracy}</div>
+                        <div><span class="score">Compliance:</span> ${compliance}</div>
+                        <div><em>${explanation}</em></div>
+                    </div>
+                `;
+
+                btn.parentElement.innerHTML = html;
+
+            } catch (err) {
+                console.error(err);
+                alert("Failed to run evaluation");
+                btn.disabled = false;
+                btn.textContent = "Run Eval";
+            }
+        }
+    </script>
+</body>
+
+</html>
