@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About EcoBot - CMIT Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="academic-body">
+
+    <!-- Navigation -->
+    <nav class="academic-nav">
+        <a href="/" class="nav-back">← Return to System</a>
+    </nav>
+
+    <div class="academic-container">
+
+        <!-- SECTION 1: LAB IDENTITY (Logo Only) -->
+        <header class="lab-header">
+            <div class="lab-logo-container">
+                <img src="{{ url_for('static', filename='CMIT Logo 2.jpg') }}"
+                    alt="Center for Management of Information Technology" class="lab-logo">
+            </div>
+            <!-- Removed duplicate text as requested -->
+        </header>
+
+        <!-- SECTION 2: PROJECT TITLE -->
+        <section class="project-title-section">
+            <h1 class="main-title">EcoBot</h1>
+            <p class="subtitle">AI-Powered Sustainability Intelligence System</p>
+        </section>
+
+        <!-- SECTION 3: PROJECT TEAM (Vertical Vertical Sequence) -->
+        <section class="team-section">
+            <div class="team-card">
+                <!-- Developer -->
+                <div class="team-group">
+                    <span class="role-label">Developer</span>
+                    <span class="member-name">Cameron Vakili</span>
+                </div>
+
+                <!-- Mentored By -->
+                <div class="team-group">
+                    <span class="role-label">Mentored By</span>
+                    <span class="member-name">Dr. Anoop Mishra</span>
+                    <span class="member-name">Bobby Dhir</span>
+                </div>
+
+                <!-- Supervisor -->
+                <div class="team-group">
+                    <span class="role-label">Supervisor</span>
+                    <span class="member-name">Dr. Deepak Khazanchi</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: ARCHITECTURE OVERVIEW (Technical) -->
+        <section class="architecture-section">
+            <h3 class="section-heading">System Architecture Overview</h3>
+
+            <div class="arch-grid-technical">
+                <!-- Frontend Layer -->
+                <div class="arch-card-tech">
+                    <div class="card-header">
+                        <h4>Frontend Layer</h4>
+                    </div>
+                    <ul>
+                        <li>Responsive UI</li>
+                        <li>Component-based layout</li>
+                        <li>Live metrics dashboard</li>
+                        <li>Dynamic chart rendering</li>
+                        <li>Sidebar state management</li>
+                    </ul>
+                </div>
+
+                <!-- Backend Layer -->
+                <div class="arch-card-tech">
+                    <div class="card-header">
+                        <h4>Backend Layer (Flask)</h4>
+                    </div>
+                    <ul>
+                        <li>REST API endpoints</li>
+                        <li>Session handling</li>
+                        <li>Request validation</li>
+                        <li>Token usage extraction</li>
+                        <li>Evaluation pipeline orchestration</li>
+                    </ul>
+                </div>
+
+                <!-- AI Processing Layer -->
+                <div class="arch-card-tech">
+                    <div class="card-header">
+                        <h4>AI Processing Layer</h4>
+                    </div>
+                    <ul>
+                        <li>Prompt engineering</li>
+                        <li>Context structuring</li>
+                        <li>OpenAI model inference</li>
+                        <li>Structured sustainability response generation</li>
+                        <li>JSON visualization data formatting</li>
+                    </ul>
+                </div>
+
+                <!-- Evaluation & Metrics Engine -->
+                <div class="arch-card-tech">
+                    <div class="card-header">
+                        <h4>Evaluation & Metrics Engine</h4>
+                    </div>
+                    <ul>
+                        <li>Fairness scoring logic</li>
+                        <li>Bias detection heuristics</li>
+                        <li>Accuracy validation checks</li>
+                        <li>Hallucination risk estimation</li>
+                        <li>Confidence scoring</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SYSTEM FLOW -->
+            <div class="system-flow-container">
+                <h4 class="flow-title">System Flow</h4>
+                <div class="flow-steps">
+                    <span class="flow-node">User Input</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-node">Frontend Interface</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-node">Flask API</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-node">OpenAI Model</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-node">Evaluation Engine</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-node">Structured Output</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-node">Metrics Dashboard</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="academic-footer">
+            <p>&copy; 2026 Center for Management of Information Technology. All Rights Reserved.</p>
+        </footer>
+
+    </div>
+
+    <!-- Script to ensure logo visibility -->
+    <script>
+        window.addEventListener('load', function () {
+            var img = document.querySelector('.lab-logo');
+            if (img) {
+                img.style.display = 'block';
+                img.style.visibility = 'visible';
+                img.style.opacity = '1';
+            }
+        });
+    </script>
+</body>
+
+</html>
