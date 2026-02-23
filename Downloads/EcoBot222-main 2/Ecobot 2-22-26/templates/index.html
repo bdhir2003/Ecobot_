@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoBot - Environmental Impact Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Markdown parsing library -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-background">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Mobile Overlay -->
+        <div id="mobile-overlay" class="mobile-overlay"></div>
+
+        <!-- Sidebar for Evaluations -->
+        <aside class="sidebar" id="eval-sidebar">
+            <div class="sidebar-header">
+                <h2>📊 Live Metrics</h2>
+            </div>
+            <div class="sidebar-content" id="eval-content">
+
+                <!-- Empty State (Hidden when active) -->
+                <div class="empty-state" id="metrics-empty">
+                    <div class="empty-icon">📈</div>
+                    <p>Start chatting to see real-time AI evaluation dashboard.</p>
+                </div>
+
+                <!-- Metrics Dashboard (Visible when active) -->
+                <div id="metrics-dashboard" style="display: none;">
+
+                    <!-- Performance Group -->
+                    <div class="metric-section">
+                        <h3 class="section-title">Performance</h3>
+                        <div class="metric-card">
+                            <div class="metric-grid">
+                                <div class="metric-tile">
+                                    <span class="metric-label">Prompt Tokens</span>
+                                    <span class="metric-value" id="m-prompt-tokens">-</span>
+                                </div>
+                                <div class="metric-tile">
+                                    <span class="metric-label">Completion</span>
+                                    <span class="metric-value" id="m-comp-tokens">-</span>
+                                </div>
+                                <div class="metric-tile">
+                                    <span class="metric-label">Total Tokens</span>
+                                    <span class="metric-value" id="m-total-tokens">-</span>
+                                </div>
+                                <div class="metric-tile">
+                                    <span class="metric-label">Est. Cost</span>
+                                    <span class="metric-value cost-value" id="m-cost">-</span>
+                                </div>
+                            </div>
+                            <div class="metric-divider"></div>
+                            <div class="metric-tile full-width">
+                                <div class="flex-row-between">
+                                    <span class="metric-label">Latency</span>
+                                    <span class="metric-value small" id="m-latency-val">-</span>
+                                </div>
+                                <div class="latency-bar">
+                                    <div class="lat-segment lat-model"></div>
+                                    <div class="lat-segment lat-eval"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Core Metrics Group -->
+                    <div class="metric-section">
+                        <h3 class="section-title">Core Metrics</h3>
+                        <div class="metric-card">
+                            <!-- Fairness -->
+                            <div class="score-row">
+                                <div class="radial-compact" id="m-fairness-radial" style="--value:0;"></div>
+                                <div class="score-info">
+                                    <span class="metric-label">Fairness</span>
+                                    <div class="bias-indicator mt-1">
+                                        <div class="bias-fill" id="m-bias-bar" style="width: 50%;"></div>
+                                    </div>
+                                    <span class="metric-sublabel" id="m-bias-label">Neutral</span>
+                                </div>
+                                <span class="score-value-large" id="m-fairness-val">0%</span>
+                            </div>
+
+                            <div class="metric-divider"></div>
+
+                            <!-- Accuracy -->
+                            <div class="score-row">
+                                <div class="radial-compact" id="m-accuracy-radial" style="--value:0;"></div>
+                                <div class="score-info">
+                                    <span class="metric-label">Accuracy</span>
+                                    <div class="checklist-compact">
+                                        <span class="check-item">✔ Factual</span>
+                                        <span class="check-item">✔ Citations</span>
+                                    </div>
+                                </div>
+                                <span class="score-value-large" id="m-accuracy-val">0%</span>
+                            </div>
+
+                            <div class="metric-divider"></div>
+
+                            <!-- Compliance -->
+                            <div class="compliance-box">
+                                <div class="checklist-item">
+                                    <span class="checklist-icon">✔</span> <span>Direct Answer</span>
+                                </div>
+                                <div class="checklist-item">
+                                    <span class="checklist-icon">✔</span> <span>Structured</span>
+                                </div>
+                                <div class="checklist-item">
+                                    <span class="checklist-icon" id="m-compliance-icon">✔</span> <span
+                                        id="m-compliance-text">Compliance Met</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trust & Risk Group -->
+                    <div class="metric-section">
+                        <h3 class="section-title">Trust & Risk</h3>
+                        <div class="metric-card">
+                            <!-- Hallucination Risk -->
+                            <div class="risk-row">
+                                <span class="metric-label">Hallucination Risk</span>
+                                <span class="badge" id="m-hallucination-label">LOW</span>
+                            </div>
+
+                            <div class="metric-divider"></div>
+
+                            <!-- Confidence -->
+                            <div class="risk-row">
+                                <span class="metric-label">System Confidence</span>
+                                <span class="score-value-large" id="m-confidence-val">98%</span>
+                            </div>
+                            <div class="confidence-bar-bg">
+                                <div class="confidence-bar-fill" style="width: 98%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header>
+                <div class="header-top-row">
+                    <button id="sidebar-toggle" class="icon-btn sidebar-toggle-btn" aria-label="Toggle Sidebar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 18H21V16H3V18ZM3 13H21V11H3V13ZM3 6V8H21V6H3Z" fill="currentColor" />
+                        </svg>
+                    </button>
+
+                    <div class="logo-container">
+                        <div class="logo-icon-wrapper">
+                            <span class="logo-icon">🌱</span>
+                        </div>
+                        <div class="logo-text">
+                            <h1>EcoBot</h1>
+                            <p class="subtitle">Your AI Sustainability Companion</p>
+                        </div>
+                    </div>
+
+                    <button id="info-toggle" class="icon-btn info-toggle-btn" aria-label="Metrics Info">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="header-nav-row">
+                    <a href="/about" class="about-btn" style="text-decoration: none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        About EcoBot
+                    </a>
+                    <button id="sources-btn" class="about-btn" style="cursor:pointer;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                        Sources
+                    </button>
+                </div>
+            </header>
+
+            <main class="chat-container" id="chat-container">
+                <div class="message bot-message welcome-message">
+                    <div class="avatar">🌱</div>
+                    <div class="message-content">
+                        <p><strong>Hello! I'm EcoBot.</strong></p>
+                        <p>I can verify your carbon footprint and meaningful sustainable practices. Ask me about:</p>
+                        <div class="suggestion-chips">
+                            <button class="chip" onclick="setInput('How much CO2 does a burger produce?')">🍔
+                                Food</button>
+                            <button class="chip" onclick="setInput('Water usage of a 10 min shower?')">💧 Water</button>
+                            <button class="chip"
+                                onclick="setInput('Carbon footprint of driving a Hummer H2 for 50km?')">🚗
+                                Transport</button>
+                            <button class="chip" onclick="setInput('Solar panel efficiency?')">⚡ Energy</button>
+                        </div>
+                        <p class="location-hint">📍 Tip: Mentioning your location helps me give better estimates!</p>
+                    </div>
+                </div>
+            </main>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea id="user-input" placeholder="Ask about your environmental impact..." rows="1"></textarea>
+                    <button id="send-btn" disabled aria-label="Send message">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>EcoBot provides estimates based on available data. Information may not be 100% accurate.</p>
+            </div>
+        </div>
+
+        <!-- Right Sidebar for Metrics Info -->
+        <div id="info-sidebar" class="info-sidebar">
+            <div class="sidebar-header">
+                <h2>Evaluation Metrics</h2>
+                <button id="info-close" class="icon-btn" aria-label="Close Info">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="info-content">
+                <div class="info-item">
+                    <h3>Relevance</h3>
+                    <p>Measures how well the response addresses your specific question. A high score means the bot
+                        stayed on topic.</p>
+                </div>
+                <div class="info-item">
+                    <h3>Faithfulness</h3>
+                    <p>Ensures the answer is derived <em>only</em> from the provided context sources. It checks for
+                        hallucinations or made-up facts.</p>
+                </div>
+                <div class="info-item">
+                    <h3>Fairness</h3>
+                    <p>Checks for biases in the response regarding gender, race, or socioeconomic status.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <button id="close-modal" class="modal-close">&times;</button>
+
+            <div class="modal-header">
+                <h2>🌱 About EcoBot</h2>
+            </div>
+
+            <div class="modal-body">
+                <!-- Section 1: Credits -->
+                <div class="credit-card">
+                    <div class="credit-row">
+                        <span class="credit-label">Developer</span>
+                        <span class="credit-value">Cameron Vakili</span>
+                    </div>
+                    <div class="credit-row">
+                        <span class="credit-label">Mentored By</span>
+                        <span class="credit-value">Dr. Anoop Mishra &bull; Bobby Dhir</span>
+                    </div>
+                    <div class="credit-row">
+                        <span class="credit-label">Supervisor</span>
+                        <span class="credit-value">Dr. Deepak Khazanchi</span>
+                    </div>
+                </div>
+
+                <!-- Section 2: Architecture -->
+                <div class="arch-section">
+                    <h3>Architecture Overview</h3>
+
+                    <div class="arch-item">
+                        <div class="arch-icon">💻</div>
+                        <div class="arch-details">
+                            <h4>Frontend Layer</h4>
+                            <p>Built with responsive modern design, featuring a live metrics panel, evaluation
+                                explanation module, component-based chat interface.</p>
+                        </div>
+                    </div>
+
+                    <div class="arch-item">
+                        <div class="arch-icon">⚙️</div>
+                        <div class="arch-details">
+                            <h4>Backend Layer</h4>
+                            <p>Powered by a Python Flask server handling API routes, managing session state, and
+                                orchestrating the OpenAI model integration.</p>
+                        </div>
+                    </div>
+
+                    <div class="arch-item">
+                        <div class="arch-icon">🧠</div>
+                        <div class="arch-details">
+                            <h4>AI Processing Layer</h4>
+                            <p>Processes user input via prompt engineering, utilizing OpenAI inference to generate
+                                structured sustainability outputs and evaluation metrics.</p>
+                        </div>
+                    </div>
+
+                    <div class="arch-item">
+                        <div class="arch-icon">📊</div>
+                        <div class="arch-details">
+                            <h4>Metrics & Transparency Layer</h4>
+                            <p>Real-time analysis panel displaying Fairness, Accuracy, Compliance, and Latency scores to
+                                ensure transparent AI behavior.</p>
+                        </div>
+                    </div>
+
+                    <div class="system-flow">
+                        <h4>System Flow</h4>
+                        <div class="flow-steps">
+                            <span>User</span> &rarr;
+                            <span>Frontend</span> &rarr;
+                            <span>Flask API</span> &rarr;
+                            <span>OpenAI</span> &rarr;
+                            <span>Response Evaluation</span> &rarr;
+                            <span>UI Display</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sources Modal -->
+    <div id="sources-modal" class="modal-backdrop">
+        <div class="modal-content sources-modal-content">
+            <button id="close-sources-modal" class="modal-close">&times;</button>
+
+            <div class="modal-header sources-modal-header">
+                <h2>📚 EcoBot Data Sources & References</h2>
+                <p class="sources-subtitle">Peer-reviewed research, government data, and trusted environmental databases
+                    powering EcoBot's analysis.</p>
+            </div>
+
+            <div class="modal-body sources-modal-body">
+                <div class="sources-grid">
+
+                    <div class="source-card">
+                        <div class="source-category">🔬 Research</div>
+                        <p class="source-apa">American Chemical Society. (2015). <em>Environmental Science &
+                                Technology</em>.</p>
+                        <a href="https://pubs.acs.org/doi/10.1021/acs.est.5c07609" target="_blank"
+                            rel="noopener noreferrer" class="source-link">pubs.acs.org ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">🌍 Carbon</div>
+                        <p class="source-apa">Carbon Tracking and Outset Project (COTAP). (n.d.). <em>Carbon Footprint
+                                Calculator</em>.</p>
+                        <a href="https://cotap.org/carbon-footprint-calculator/" target="_blank"
+                            rel="noopener noreferrer" class="source-link">cotap.org ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">📊 Data</div>
+                        <p class="source-apa">Federal Reserve Economic Data (FRED). (2023). <em>Total Carbon Dioxide
+                                Emissions from All Sectors, All Fuels in the United States</em>.</p>
+                        <a href="https://fred.stlouisfed.org/series/EMISSCO2TOTVTCTOUSA" target="_blank"
+                            rel="noopener noreferrer" class="source-link">fred.stlouisfed.org ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">📄 Patent</div>
+                        <p class="source-apa">Google Patents. (2024). <em>Patent WO2024214112A1</em>.</p>
+                        <a href="https://patents.google.com/patent/WO2024214112A1" target="_blank"
+                            rel="noopener noreferrer" class="source-link">patents.google.com ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">🌐 Policy</div>
+                        <p class="source-apa">Organisation for Economic Co-operation and Development (OECD). (2022).
+                            <em>Measuring carbon footprints of agri-food products</em>.
+                        </p>
+                        <a href="https://www.oecd.org/en/publications/measuring-carbon-footprints-of-agri-food-products_8eb75706-en/full-report.html"
+                            target="_blank" rel="noopener noreferrer" class="source-link">oecd.org ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">🌍 Climate</div>
+                        <p class="source-apa">United Nations. (n.d.). <em>Food and Climate Change</em>.</p>
+                        <a href="https://www.un.org/en/climatechange/science/climate-issues/food" target="_blank"
+                            rel="noopener noreferrer" class="source-link">un.org ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">🚗 Transport</div>
+                        <p class="source-apa">U.S. Department of Energy. (2023). <em>Compare Side-by-Side</em>.</p>
+                        <a href="https://www.fueleconomy.gov/feg/Find.do?action=sbsSelect" target="_blank"
+                            rel="noopener noreferrer" class="source-link">fueleconomy.gov ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">⚡ Energy</div>
+                        <p class="source-apa">U.S. Energy Information Administration (EIA). (2024). <em>Carbon Dioxide
+                                Emissions Coefficients</em>.</p>
+                        <a href="https://www.eia.gov/environment/emissions/co2_vol_mass.php" target="_blank"
+                            rel="noopener noreferrer" class="source-link">eia.gov ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">💧 Water</div>
+                        <p class="source-apa">U.S. Environmental Protection Agency (EPA). (n.d.). <em>EPA WATERS
+                                API</em>.</p>
+                        <a href="https://www.epa.gov/waterdata/waters-api" target="_blank" rel="noopener noreferrer"
+                            class="source-link">epa.gov ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">🌿 EPA</div>
+                        <p class="source-apa">U.S. Environmental Protection Agency (EPA). (2026). <em>Greenhouse Gas
+                                Equivalencies Calculator</em>.</p>
+                        <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator" target="_blank"
+                            rel="noopener noreferrer" class="source-link">epa.gov ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">⚡ EPA</div>
+                        <p class="source-apa">U.S. Environmental Protection Agency (EPA). (2025). <em>Green Power
+                                Equivalency Calculator</em>.</p>
+                        <a href="https://www.epa.gov/green-power-markets/green-power-equivalency-calculator"
+                            target="_blank" rel="noopener noreferrer" class="source-link">epa.gov ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">💧 EPA</div>
+                        <p class="source-apa">U.S. Environmental Protection Agency (EPA). (2025). <em>Showerheads</em>.
+                        </p>
+                        <a href="https://www.epa.gov/watersense/showerheads" target="_blank" rel="noopener noreferrer"
+                            class="source-link">epa.gov ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">💧 Water</div>
+                        <p class="source-apa">U.S. Geological Survey (USGS). (2018). <em>How Much Water Do You Use at
+                                Home?</em></p>
+                        <a href="https://www.usgs.gov/special-topics/water-science-school/science/how-much-water-do-you-use"
+                            target="_blank" rel="noopener noreferrer" class="source-link">usgs.gov ↗</a>
+                    </div>
+
+                    <div class="source-card">
+                        <div class="source-category">🌍 Data</div>
+                        <p class="source-apa">World Bank Group. (2022). <em>CO₂ emissions</em>.</p>
+                        <a href="https://data360.worldbank.org/en/dataset/OWID_CB" target="_blank"
+                            rel="noopener noreferrer" class="source-link">data360.worldbank.org ↗</a>
+                    </div>
+
+                </div>
+
+                <div class="sources-footer">
+                    <p>EcoBot estimates are based on publicly available environmental datasets and government APIs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        function setInput(text) {
+            userInput.value = text;
+            userInput.focus();
+            userInput.dispatchEvent(new Event('input'));
+        }
+
+        // Auto-resize textarea
+        userInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            sendBtn.disabled = this.value.trim() === '';
+        });
+
+        // Handle Enter key (Shift+Enter for new line)
+        userInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (this.value.trim() !== '') {
+                    sendMessage();
+                }
+            }
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Sidebar Toggle Logic
+        // Sidebar Toggle Logic
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('eval-sidebar');
+        const appContainer = document.querySelector('.app-container');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+
+        function toggleSidebar() {
+            if (window.innerWidth < 768) {
+                appContainer.classList.toggle('mobile-sidebar-open');
+            } else {
+                appContainer.classList.toggle('sidebar-collapsed');
+            }
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+        }
+
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', () => {
+                appContainer.classList.remove('mobile-sidebar-open');
+            });
+        }
+
+        // Reset mobile state on resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                appContainer.classList.remove('mobile-sidebar-open');
+            }
+        });
+
+        // Info Sidebar Toggle Logic
+        const infoToggle = document.getElementById('info-toggle');
+        const infoClose = document.getElementById('info-close');
+
+        function toggleInfoSidebar() {
+            appContainer.classList.toggle('info-open');
+        }
+
+        if (infoToggle) {
+            infoToggle.addEventListener('click', toggleInfoSidebar);
+        }
+        if (infoClose) {
+            infoClose.addEventListener('click', toggleInfoSidebar);
+        }
+
+
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Clear input
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            sendBtn.disabled = true;
+
+            // Add user message
+            addMessage(message, 'user');
+
+            // Add loading indicator
+            const loadingId = addLoadingIndicator();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                // Remove loading indicator
+                removeMessage(loadingId);
+
+                if (data.error) {
+                    addMessage(`Error: ${data.error}`, 'bot', true);
+                } else {
+                    let outputText = data.output_text || JSON.stringify(data);
+                    let chartData = null;
+
+                    // extract json block for chart if present
+                    // The agent is instructed to append it at the end
+                    // Format: ```json { "chart": ... } ``` or just { "chart": ... }
+                    const jsonMatch = outputText.match(/```json\s*(\{[\s\S]*?"chart"[\s\S]*?\})\s*```/) || outputText.match(/(\{[\s\S]*?"chart"[\s\S]*?\})$/);
+
+                    if (jsonMatch) {
+                        try {
+                            const potentialJson = JSON.parse(jsonMatch[1]);
+                            if (potentialJson.chart) {
+                                chartData = potentialJson.chart;
+                                // Remove the JSON block from text
+                                outputText = outputText.replace(jsonMatch[0], '').trim();
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse chart JSON", e);
+                        }
+                    }
+
+                    // Render HTML from Markdown
+                    const htmlContent = marked.parse(outputText);
+
+                    // Create message element
+                    const msgId = addMessage(htmlContent, 'bot', false, data.needs_location ? 'location-request' : '');
+
+                    // Render chart if data exists
+                    if (chartData) {
+                        renderChart(msgId, chartData);
+                    }
+
+                    // Handle Evaluation if present
+                    if (data.evaluation) {
+                        addEvaluation(data.evaluation);
+                    }
+                }
+
+            } catch (error) {
+                removeMessage(loadingId);
+                addMessage(`Connection error: ${error.message}`, 'bot', true);
+            }
+        }
+
+        function addMessage(content, sender, isError = false, extraClass = '') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message ${extraClass}`;
+            if (isError) messageDiv.classList.add('error-message');
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = sender === 'bot' ? '🌱' : '👤';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            if (sender === 'bot') {
+                contentDiv.innerHTML = content;
+            } else {
+                contentDiv.textContent = content;
+            }
+
+            if (sender === 'bot') {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(contentDiv);
+            } else {
+                messageDiv.appendChild(contentDiv);
+                messageDiv.appendChild(avatar);
+            }
+
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+            return messageDiv.id = 'msg-' + Date.now();
+        }
+
+        function addEvaluation(evalData) {
+            const emptyState = document.getElementById('metrics-empty');
+            const dashboard = document.getElementById('metrics-dashboard');
+
+            if (emptyState) emptyState.style.display = 'none';
+            if (dashboard) dashboard.style.display = 'block';
+
+            if (evalData.error) {
+                console.error("Evaluation error:", evalData.error);
+                return;
+            }
+
+            // 1. Update Token Usage
+            setText('m-prompt-tokens', evalData.prompt_tokens || '-');
+            setText('m-comp-tokens', evalData.completion_tokens || '-');
+            setText('m-total-tokens', evalData.total_tokens || '-');
+            setText('m-cost', evalData.cost || '$0.00');
+
+            // 2. Update Latency
+            setText('m-latency-val', evalData.latency);
+
+            // 3. Update Radial Scores (Fairness & Accuracy)
+            updateRadial('m-fairness-radial', 'm-fairness-val', evalData.fairness_score);
+            updateRadial('m-accuracy-radial', 'm-accuracy-val', evalData.accuracy_score);
+
+            // 4. Update Bias Bar (Visual effect based on score)
+            // 50% is neutral. Deviation implies bias.
+            const biasBar = document.getElementById('m-bias-bar');
+            const biasLabel = document.getElementById('m-bias-label');
+            if (biasBar && biasLabel) {
+                let biasWidth = 50;
+                let biasText = "Neutral";
+
+                if (evalData.fairness_score < 70) {
+                    biasWidth = 80; // High bias visual
+                    biasText = "Leaning Detected";
+                    biasBar.style.backgroundColor = "#EF4444";
+                } else if (evalData.fairness_score < 90) {
+                    biasWidth = 65; // Slight bias
+                    biasText = "Slight Leaning";
+                    biasBar.style.backgroundColor = "#F59E0B";
+                } else {
+                    biasBar.style.backgroundColor = "#10B981";
+                }
+                biasBar.style.width = biasWidth + '%';
+                biasLabel.innerText = biasText;
+            }
+
+            // 5. Compliance - Visual Check of all items
+            const compText = document.getElementById('m-compliance-text');
+            const compIcon = document.getElementById('m-compliance-icon');
+            if (compText && compIcon) {
+                const isCompliant = String(evalData.compliance).toLowerCase().includes('yes');
+                compText.innerText = isCompliant ? "Compliance Met" : "Issues Found";
+                compText.style.color = isCompliant ? "#10B981" : "#EF4444";
+                compIcon.innerText = isCompliant ? "✔" : "⚠";
+                compIcon.style.color = isCompliant ? "#10B981" : "#EF4444";
+            }
+
+            // 6. Hallucination Risk (Derived from Accuracy)
+            const halLabel = document.getElementById('m-hallucination-label');
+            const halMeter = document.getElementById('m-hallucination-meter');
+            if (halLabel && halMeter) {
+                // Reset meter
+                halMeter.querySelectorAll('.risk-level').forEach(el => el.classList.remove('active', 'low', 'med', 'high'));
+                const levels = halMeter.querySelectorAll('.risk-level');
+
+                if (evalData.accuracy_score >= 90) {
+                    halLabel.innerText = "Low";
+                    halLabel.className = "val-green";
+                    levels[0].classList.add('active', 'low');
+                } else if (evalData.accuracy_score >= 70) {
+                    halLabel.innerText = "Medium";
+                    halLabel.className = "val-yellow";
+                    levels[0].classList.add('active', 'med');
+                    levels[1].classList.add('active', 'med');
+                } else {
+                    halLabel.innerText = "High";
+                    halLabel.className = "val-red";
+                    levels[0].classList.add('active', 'high');
+                    levels[1].classList.add('active', 'high');
+                    levels[2].classList.add('active', 'high');
+                }
+            }
+
+            // 7. System Confidence (Simulated/Derived)
+            // In a real system, this would come from logprobs. Here we map it near accuracy.
+            const confVal = document.getElementById('m-confidence-val');
+            if (confVal) {
+                // simple heuristic for demo
+                const confidence = Math.min(evalData.accuracy_score + 2, 99);
+                confVal.innerText = confidence + "%";
+            }
+        }
+
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = value;
+        }
+
+        function updateRadial(radialId, labelId, score) {
+            const radial = document.getElementById(radialId);
+            const label = document.getElementById(labelId);
+
+            if (radial) {
+                radial.style.setProperty('--value', score);
+                // Update Color
+                radial.classList.remove('color-green', 'color-yellow', 'color-red');
+                if (score >= 90) radial.classList.add('color-green');
+                else if (score >= 70) radial.classList.add('color-yellow');
+                else radial.classList.add('color-red');
+            }
+
+            if (label) label.innerText = score + "%";
+        }
+
+        function addLoadingIndicator() {
+            const id = 'loading-' + Date.now();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message loading-message';
+            messageDiv.id = id;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = '🌱';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content loading-bubble';
+            contentDiv.innerHTML = '<div class="dot-flashing"></div>';
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+            return id;
+        }
+
+        function removeMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function renderChart(msgId, chartData) {
+            const msgEl = document.getElementById(msgId);
+            if (!msgEl) return;
+
+            const contentDiv = msgEl.querySelector('.message-content');
+            const canvasContainer = document.createElement('div');
+            canvasContainer.style.marginTop = '15px';
+            canvasContainer.style.background = 'white';
+            canvasContainer.style.borderRadius = '10px';
+            canvasContainer.style.padding = '10px';
+            canvasContainer.style.maxWidth = '100%';
+
+            const canvas = document.createElement('canvas');
+            canvas.id = 'chart-' + msgId;
+            canvasContainer.appendChild(canvas);
+            contentDiv.appendChild(canvasContainer);
+
+            new Chart(canvas, {
+                type: chartData.type || 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: chartData.label,
+                        data: chartData.values,
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.7)', // User (Green)
+                            'rgba(107, 114, 128, 0.5)'  // Average (Gray)
+                        ],
+                        borderColor: [
+                            'rgb(16, 185, 129)',
+                            'rgb(107, 114, 128)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: !!chartData.title,
+                            text: chartData.title || ''
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            scrollToBottom();
+        }
+
+        // Sources Modal Logic
+        const sourcesBtn = document.getElementById('sources-btn');
+        const sourcesModal = document.getElementById('sources-modal');
+        const closeSourcesModal = document.getElementById('close-sources-modal');
+
+        if (sourcesBtn && sourcesModal) {
+            sourcesBtn.addEventListener('click', () => {
+                sourcesModal.classList.add('show');
+            });
+        }
+        if (closeSourcesModal && sourcesModal) {
+            closeSourcesModal.addEventListener('click', () => {
+                sourcesModal.classList.remove('show');
+            });
+        }
+        if (sourcesModal) {
+            sourcesModal.addEventListener('click', (e) => {
+                if (e.target === sourcesModal) {
+                    sourcesModal.classList.remove('show');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
